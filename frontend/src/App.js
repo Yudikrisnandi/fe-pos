@@ -7,7 +7,6 @@ import SideMenu from './components/SideMenu';
 
 const queryClient = new QueryClient()
 
-
 function App() {
   return (
     <QueryClientProvider client={queryClient}>

@@ -2,6 +2,8 @@ const express = require('express');
 require('dotenv').config();
 const connectDB = require('./db');
 const cors = require('cors')
+const cloudinary = require('cloudinary').v2;
+const multer = require('multer');
 
 const app = express();
 

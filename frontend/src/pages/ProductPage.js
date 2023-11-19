@@ -1,7 +1,16 @@
 import { useQuery } from '@tanstack/react-query'
+import { useState } from 'react' 
 import { getProducts } from '../api/product'
+import Button from '../components/Button';
+import ProductTable from '../components/Table';
+import FormAddProduct from '../components/FormAddProduct';
 
 export default function ProductPage(){
+  const [showModal, setShowModal] = useState(false)
+  const [editProduct, setEditProduct] = useState(null)
+  const openModal = () => setShowModal(true)
+  const closeModal = () => setShowModal(false)
+
   const { isLoading, isError, data } = useQuery({
     queryKey:['products'],
     queryFn:getProducts,
@@ -16,32 +25,29 @@ export default function ProductPage(){
   }
 
   return(
-    <div className="px-5 mt-5">
+    <div className="relative px-5 mt-5">
       <div className="flex items-center justify-between mb-5">
         <h3 className="text-2xl font-semibold leading-relaxed text-grey-800">Table Product</h3>
+        <Button
+          text="Add New Product"
+          onClick={openModal}
+        />
       </div>
-      <table className="w-full border">
-        <thead className="bg-violet-500">
-          <tr className="text-sm font-medium font-semibold">
-            <td className="text-white p-4 w-20">No</td>
-            <td className="text-white text-left">Name</td>
-            <td className="text-white text-left">Category</td>
-            <td className="text-white text-left">Price</td>
-            <td className="text-white text-left">Action</td>
-          </tr>
-        </thead>
-        <tbody>
-          {data.map((product, index) => (
-            <tr className={`${index % 2 === 0 ? "bg-slate-50" : "bg-slate-200" }`}>
-              <td className="p-4">{index+1}</td>
-              <td>{product.name}</td>
-              <td>{product.category}</td>
-              <td>{product.price}</td>
-              <td>edit</td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
+      <ProductTable
+        data={data}
+        setEditProduct={setEditProduct}
+        openModal={openModal}
+      />
+      {showModal && (
+        <div 
+          className="fixed inset-0 bg-black bg-opacity-25 backdrop-blur-sm flex justify-center items-center"
+        >
+          <FormAddProduct
+            data={editProduct}
+            onClose={closeModal}
+          />
+        </div>
+      )}
     </div>
   )
 }

@@ -1,4 +1,5 @@
 const Product = require('../models/Product');
+const cloudinary = require('../cloudinary');
 
 exports.getProducts = async(req, res) => {
   try {
@@ -8,22 +9,105 @@ exports.getProducts = async(req, res) => {
       data: products
     })
   }catch(err){
-    res.json(err)
+    console.log(err)
+    res.status(500).json({ error: 'Internal Server Error' });
   }
 }
 
 exports.createProduct= async(req, res) => {
   try {
-    const product = {
-      name: "Vegetable Salad",
-      price: 45000,
-      category: "food",
-      active: true,
-      image: "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&q=80&w=2080&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
-    }
-    await Product.create(product)
-    res.status(201).json(product)
+    const {
+      name,
+      price,
+      category,
+      inStock,
+    } = req.body
+
+    const productImage = await new Promise((resolve, reject) => {
+      const stream = cloudinary.uploader.upload_stream({ resource_type: 'auto' }, (error, result) => {
+        if (error) reject(error);
+        else resolve(result);
+      });
+
+      stream.end(req.file.buffer);
+    });
+
+    const product = await Product.create({
+      name,
+      price,
+      category,
+      inStock,
+      image: productImage.secure_url,
+    })
+    
+    res.status(201).json({
+      message: "success",
+      data: product
+    })
   }catch(err){
-    res.json(err)
+    console.log(err)
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+}
+
+exports.deleteProduct= async(req, res) => {
+  const id = req.params.id;
+  try {
+    const deletedData = await Product.findOneAndDelete({ _id: id });
+
+    if (!deletedData) {
+      return res.status(404).json({ message: 'Data not found' });
+    }
+
+    return res.json({ message: 'Data deleted successfully' });
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({ message: 'Internal Server Error' });
+  }
+};
+
+exports.editProduct= async(req, res) => {
+  const id = req.params.id;
+  try {
+    const {
+      name,
+      price,
+      category,
+      image,
+      inStock,
+    } = req.body
+    
+    let productImage = {}
+
+    if(req.file){
+      productImage = await new Promise((resolve, reject) => {
+        const stream = cloudinary.uploader.upload_stream({ resource_type: 'auto' }, (error, result) => {
+          if (error) reject(error);
+          else resolve(result);
+        });
+
+        stream.end(req.file.buffer);
+      });
+    }else if(req.body && req.body.image){
+      productImage.secure_url = image;
+    }
+
+    const product = await Product.findOneAndUpdate(
+      { _id: id },
+      { $set: { name, price, category, image: productImage.secure_url, inStock } },
+      { new: true }
+    )
+
+    if (!product) {
+      return res.status(404).json({ message: 'Product not found' });
+    }
+    
+    res.status(200).json({
+      message: "success",
+      data: product
+    })
+  }catch(err){
+    console.log(err)
+    res.status(500).json({ error: 'Internal Server Error' });
   }
 }
