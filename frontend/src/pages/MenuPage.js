@@ -1,4 +1,5 @@
 import { useQuery } from '@tanstack/react-query'
+import { useState } from 'react';
 import { getProducts } from '../api/product'
 import ProductCard from '../components/ProductCard'
 import OrderDetail from '../components/OrderDetail'
@@ -6,6 +7,7 @@ import OrderDetail from '../components/OrderDetail'
 const filters = ['All Menu', 'Food', 'Drink']
 
 export default function MenuPage(){
+  const [orders, setOrders] = useState([])
   const { isLoading, isError, data } = useQuery({
     queryKey:['products'],
     queryFn:getProducts,
@@ -17,6 +19,72 @@ export default function MenuPage(){
 
   if(isError){
     return <div>something when wrong</div>
+  }
+
+  function addToOrder(productId){
+    const product = data.find(item => item._id === productId)
+    const originalPrice = product.price;
+    const isInOrders = orders.find(item => item._id === productId)
+    if(!isInOrders){
+      const newProduct = {
+        ...product,
+        quantity: 1,
+      }
+
+      setOrders([...orders, newProduct])
+    }else{
+      const newOrders = orders.map(item => {
+        if(item._id === productId){
+          const quantity = item.quantity + 1;
+          
+          return {
+            ...item,
+            quantity,
+            price: quantity * originalPrice 
+          }
+        }else { return item }
+      })
+      setOrders(newOrders)
+    }
+  }
+
+  function decrementOrderItem(productId){
+    const product = orders.find(item => item._id === productId);
+    const originalProduct = data.find(item => item._id === productId);
+    const originalPrice = originalProduct.price;
+    const currentQuantity = product.quantity - 1;
+    if(currentQuantity === 0){
+      const newOrders = orders.filter(item => item._id !== productId);
+      setOrders(newOrders);
+    }else{
+      const newOrders = orders.map(item => {
+        if(item._id === productId){
+          return {
+            ...item,
+            quantity: currentQuantity,
+            price: currentQuantity * originalPrice,
+          }
+        }else { return item }
+      })
+      setOrders(newOrders);
+    }
+  }
+
+  function incrementOrderItem(productId){
+    const product = orders.find(item => item._id === productId);
+    const originalProduct = data.find(item => item._id === productId);
+    const originalPrice = originalProduct.price;
+    const currentQuantity= product.quantity + 1;
+    const newOrders = orders.map(item => {
+      if(item._id === productId){
+        return {
+          ...item,
+          quantity: currentQuantity,
+          price: currentQuantity * originalPrice,
+        }
+      }else { return item }
+    })
+    setOrders(newOrders);
   }
   
   return(
@@ -48,11 +116,20 @@ export default function MenuPage(){
         </div>
         <div className="grid grid-cols-5">
           {data.map(product => (
-            <ProductCard product={product}/>
+            <ProductCard 
+              product={product}
+              key={product._id}
+              addToOrder={addToOrder}
+            />
           ))}
         </div>
       </div>
-      <OrderDetail/>
+      <OrderDetail
+        orders={orders}
+        addToOrder={addToOrder}
+        decrementOrderItem={decrementOrderItem}
+        incrementOrderItem={incrementOrderItem}
+      />
     </div>
   )
 }

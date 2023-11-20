@@ -44,7 +44,7 @@ export default function ProductTable({ data, setEditProduct, openModal }){
               </button>
               <button 
                 className="ml-2 py-1 px-2 font-semibold bg-red-400 rounded hover:bg-red-300 text-white"
-                onClick={() => mutation.delete(product._id)}
+                onClick={() => mutation.mutate(product._id)}
               >
                 Deleted
               </button>

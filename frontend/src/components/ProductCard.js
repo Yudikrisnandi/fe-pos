@@ -1,8 +1,12 @@
 export default function ProductCard({ 
-  product
+  product,
+  addToOrder,
 }){
   return(
-    <div className="relative flex w-60 flex-col overflow-hidden rounded-lg border border-grey-100 bg-white show-md mb-4 p-3">
+    <div 
+      className="relative flex w-60 flex-col overflow-hidden rounded-lg border border-grey-100 bg-white show-md mb-4 p-3 cursor-pointer"
+      onClick={() => addToOrder(product._id)}
+    >
       <div className="flex overflow-hidden rounded-xl">
         <img 
           src={product.image} 

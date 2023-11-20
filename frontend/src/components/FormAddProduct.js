@@ -7,11 +7,12 @@ import getFileNameFromUrl from '../utils/getFileNameFromUrl'
 
 export default function FormAddProduct({ onClose, data }){
   const queryClient = useQueryClient()
-  const [isEdited] = useState(data?._id || null);
+  const [isEdited, setIsEdited] = useState(data?._id || null);
   const [name, setName] = useState(data?.name || '');
   const [price, setPrice] = useState(data?.price || '');
   const [stock, setStock] = useState(data?.inStock || true);
-  const [category, setCategory] = useState({label: data?.category, value: data?.category } || null);
+  const [category, setCategory] = useState({label: data?.category, value: data?.category });
+  const [defaultValue] = useState({label: data?.category, value: data?.category });
   const options = [
     { value: '', label: 'All' },
     { value: 'Food', label: 'Food' },
@@ -98,10 +99,10 @@ export default function FormAddProduct({ onClose, data }){
         <div class="flex flex-col">
           <label class="font-semibold">Category</label>
           <Select 
-            value={category}
             options={options} 
             onChange={handleSelectCategory}
-            placeholder="All"
+            placeholder="Select"
+            defaultValue={defaultValue} 
           />
         </div>
         <div class="flex flex-col">
@@ -144,15 +145,18 @@ export default function FormAddProduct({ onClose, data }){
           )}
         </div>
         <div className="flex justify-end mt-4">
-          <Button 
-            text="Close"
+          <button
             onClick={onClose}
-          />
-
-          <Button 
-            text={textButton}
+            className="ml-2 py-1 px-2 font-semibold bg-red-400 rounded hover:bg-red-300 text-white"
+          >
+            Cancel
+          </button>
+          <button
+            className="ml-2 py-1 px-2 font-semibold bg-violet-700 rounded hover:bg-violet-600 text-white"
             onClick={handleSave}
-          />
+          >
+            Save
+          </button>
         </div>
       </form>
     </div>

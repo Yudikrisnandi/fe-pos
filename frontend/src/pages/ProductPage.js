@@ -9,7 +9,10 @@ export default function ProductPage(){
   const [showModal, setShowModal] = useState(false)
   const [editProduct, setEditProduct] = useState(null)
   const openModal = () => setShowModal(true)
-  const closeModal = () => setShowModal(false)
+  const closeModal = () => {
+    setEditProduct(null)
+    setShowModal(false)
+  }
 
   const { isLoading, isError, data } = useQuery({
     queryKey:['products'],
